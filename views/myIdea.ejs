@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <% include ./partials/head %>
+        <title>Pagina Principal</title>
+    </head>
+    <body>
+        <% include ./partials/header %>
+        <div class="container">
+            <div class="row">
+                <div class="col-2 my-5">
+                    <a href="javascript:window.history.go(-1);" class="btn btn-voltar"><b>Voltar</b></a>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-12 text-center">
+                    <h5 class="cinza mb-5">Bem Vindo <%=dados.user%> a sua &aacute;rea de Ideias</h5>
+                </div>
+                <div class="col-10">
+                    <div class="row justify-content-between my-5">
+                        <div class="col-12 col-md-4 text-center">
+                            <p class="cinza f-26 mr-2 text-md-left"><img src="img/lamp2.svg" class="centralizarX-sm d-md-inline-block d-block img-lampada img-fluid">Lista de Ideias</p>
+                        </div>
+                        <div class="col-12 col-md-2 text-center">
+                            <a href="/ideia?op=1">
+                                <img src="img/add2.png" class="img-fluid">
+                            </a>
+                        </div>
+                        <div class="col-12 my-5">
+                            <table id="myTable" class="table table-striped table-bordered table-hover btn-table" cellspacing="0" width="100%">
+                                <thead>
+                                    <th>Nome</th>
+                                    <th>descricao</th>
+                                    <th>data</th>
+                                    <th>A&ccedil;&atilde;o</th>
+                                </thead>
+                                <tbody id="minhasIdeias">
+                                   
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <% include ./partials/footer %>
+        <script>
+         jQuery(function($) {
+            $(document).ready(function() {
+                dados = {sql:'SELECT * FROM ideias WHERE fk_usuario = <%=dados.id%>'};
+                pegarDados(dados, function(data){
+                    var linhas
+                    for(i=0; i<data.length; i++){
+                         linhas += ` <tr>
+                                        <td>${data[i].titulo}</td>
+                                        <td>${data[i].descricao}</td>
+                                        <td>${data[i].data_cadastro}</td>
+                                        <td class="text-center">
+                                            <a href="/Ideia?id=${data[i].idideia}">
+                                                <img src="img/editar.png" class="img-fluid d-inline-block img-table">
+                                            </a>
+                                        </td>
+                                    </tr>`;
+                    }
+                    $('#minhasIdeias').html(linhas)
+                    $('#myTable').DataTable({
+                        aoColumns: [null, null, null, { bSortable: false }]
+                    });
+                })
+            });
+        })
+        </script>
+    </body>
+        <%include ./partials/rodape %>
+</html>

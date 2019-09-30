@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <% include ./partials/head %>
+        <title>Pagina Principal</title>
+    </head>
+    <body>
+        <% include ./partials/header %>
+        <div class="container vh-100">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="my-5 cinza">Formul&aacute;rio de Cadastro</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <form name="cadastro">
+                        <div class="row justify-content-md-end justify-content-center">
+                            <div class="col-12">
+                                <label for="nome">Nome</label>
+                                <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome Completo" required>
+                            </div>
+                            <div class="col-12 col-md-6 my-3">
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                            </div>
+                            <div class="col-12 col-md-6 my-3">
+                                <label for="senha">Senha</label>
+                                <input type="password" class="form-control" id="senha" name="senha" placeholder="Senha" required>
+                            </div>
+                            <div class="col-10 col-md-4 mt-4">
+                                <button id="enviarCadastro" type="button" class="btn w-100 btn-success">Cadastrar <i class="float-right mt-1 mr-3 fas fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <% include ./partials/footer %>    
+    </body>
+    <script>
+        
+        jQuery(function($) {
+            
+            $(document).ready(function() {
+               $('#enviarCadastro').on('click', function(){
+                    var formData = new FormData($("form[name='cadastro']")[0]), 
+                        dados = [
+                                    {chave:'tabela', valor:'usuarios'},
+                                    {chave:'tipo', valor:'usuario'}
+                                ];
+                    enviarForm('post', dados, formData, function(data){
+                        if(data.affectedRows == 1){
+                            alert('Cadastrado o usuario com sucesso');
+                            $('input').val('');
+                            $('#enviarCadastro').attr('disabled', false);
+                        }else{
+                            alert('Não Foi Possível Se Cadastrar, tente mais tarde');
+                            $('input').val('');
+                            $('#enviarCadastro').attr('disabled', false);
+                        }
+                    });
+                    $(this).attr('disabled', true);
+               })
+            });
+        });
+    </script>
+        <%include ./partials/rodape %>
+</html>

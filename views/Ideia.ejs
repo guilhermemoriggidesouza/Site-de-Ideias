@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <% include ./partials/head %>
+        <title>Pagina Principal</title>
+    </head>
+    <body>
+        <% include ./partials/header %>
+
+        <div class="container mt-4">
+            <div class="form-row">
+                <div class="col-12">
+                    <form name="dadosIdeias">
+                        <div class="form-row">
+                            <div class="col-6">
+                                <label for="titulo">Titulo</label>
+                                <input type="text" class="form-control" id="titulo" name="titulo" placeholder="titulo Completo" required>
+                            </div>   
+                            <div class="col-6">
+                                <label for="arquivo">Enviar Imagem</label>
+                                <input type="file" class="form-control-file" id="arquivo" name="arquivo">
+                            </div>
+                            <div class="col-12">
+                                <label for="descricao">Descrição</label>
+                                <textarea class="form-control" id="descricao" rows="3" name="descricao"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                    <button id="enviarIdeia" class="btn btn-primary">Enviar</button>
+                </div>
+                <h3>teste</h3>
+            </div>
+        </div>
+
+        <% include ./partials/footer %>    
+        <script>
+            jQuery(function($) {
+                $(document).ready(function() {
+                    $('#enviarIdeia').on('click', function(){
+                        var dados = [
+                                        {chave:'tabela', valor:'ideias'},
+                                        {chave:'nomeImage', valor:GerarNomeAleatorio()}
+                                    ],
+                        formData = new FormData($("form[name='dadosIdeias']")[0]);
+                        formData.append('data_cadastro', RetornaDataHoraAtual());
+                        formData.append('fk_usuario', <%=dados.id%>);
+                        enviarForm('post', dados, formData, function(data){
+                            if(data.affectedRows == 1){
+                                alert('Ideia Cadastrada');
+                                $('input').val('');
+                                $('#enviarCadastro').attr('disabled', false);
+                            }else{
+                                alert('Não Foi Possível Cadastrar a Ideia');
+                                $('input').val('');
+                                $('#enviarCadastro').attr('disabled', false);
+                            }
+                        })
+                    })
+                });
+            })
+        </script>
+    </body>
+        <%include ./partials/rodape %>
+</html>

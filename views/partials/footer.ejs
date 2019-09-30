@@ -1,0 +1,146 @@
+<script src="jquery/jquery.js" integrity="" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<div class="modal" id="modalLogin" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Login</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="emailLogin" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="col-12">
+                        <label for="senha">Senha</label>
+                        <input type="password" class="form-control" id="senhaLogin" name="senha" placeholder="Senha" required>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="javascript:logar()" class="btn btn-primary">Logar</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+    </div>
+<script>
+    function enviarForm(tipo, append, formData, callback){
+        var get = '';
+        for(i=0;i<append.length; i++){
+           get += append[i].chave+'='+append[i].valor+'&';
+        }
+        $.ajax({ 
+            type: tipo,
+            enctype: 'multipart/form-data',
+            url: "/api/"+tipo+"?"+get.substr(0,get.length-1),
+            data: formData,
+            processData: false,
+            contentType: false
+        })
+        .done(function (data){
+            callback(data);
+            console.log(data);
+        }).fail(function(data){
+            console.log(data);
+        })
+    }
+    function posicionaRodape() {
+        //valida se o body eh menor que a tela
+        var hw = $(window).innerHeight(), 
+            hb = $('html').innerHeight();
+        if(hw > hb) {
+            $('#footer').addClass('fixed-bottom');
+        } else {
+            $('#footer').removeClass('fixed-bottom');
+        }
+    }
+    function abrirModal(modal){
+        $(modal).modal('show');
+    }
+    function RetornaDataHoraAtual(){
+        var dNow = new Date();
+        var localdate = dNow.getFullYear() + '-' + (dNow.getMonth()+1) + '-' + dNow.getDate();
+        return localdate;
+    }
+    function dec2hex(numero) {
+        var base = 16;
+        var digito = new Array();
+        var i = 0;
+        while (numero != 0) {
+            i++;
+            digito[i] = numero % base;
+            numero = Math.floor(numero / base);
+        }
+        value = "";
+        while (i >= 1)  {
+            switch (digito[i]) {
+                case 10: { value += "A"; break }
+                case 11: { value += "B"; break }
+                case 12: { value += "C"; break }
+                case 13: { value += "D"; break }
+                case 14: { value += "E"; break }
+                case 15: { value += "F"; break }
+                default: { value += digito[i]; break }
+            }
+            i--;
+        }
+        return value;
+    }
+    function GerarNomeAleatorio(tamanho = 7) {
+        var caracter =0 ;
+        var final = '';
+        min = 32;
+        max = 126;
+        for (i = 1; i <= tamanho; i++) {
+            caracter = min + Math.floor((Math.random() * (max - min)));  // 32 a 126
+            caracter = dec2hex(caracter);
+            caracter = unescape(caracter);
+            final += caracter;
+        }
+        return final;
+    }
+
+    function logar(){
+        var dados = {email: $('#emailLogin').val(), senha: $('#senhaLogin').val(), tipo: 'login', tabela: 'usuarios'}
+        $.ajax({ 
+            type: "GET",
+            url: "/api/get",
+            data: dados,
+        })
+        .done(function (data) {
+            if(data.error){
+                alert(data.msg);
+            }else{
+                alert('Usuario Logado Com Sucesso');
+                window.location.href="/";
+            }
+        })
+    }
+    function pegarDados(dados, callback){
+        $.ajax({ 
+            type: "GET",
+            url: "/api/get",
+            data: dados,
+        })
+        .done(function (data) {
+            callback(data);
+        })
+        .fail(function(data){
+            var mensageError = JSON.parse(data.responseText) ;
+            alert(mensageError.result.sqlMessage);
+        })
+    }
+    jQuery(function($) {
+        
+        $(document).ready(function() {
+            
+        });
+    })
+</script>
