@@ -136,13 +136,52 @@
     .img-table{
         height: 48px;
     }
+    .img-table-menor{
+        height: 36px;
+    }
     .contagem:hover > .revelar{
         display: block;
         animation:descer 2s;
-        -webkit-animation:descer 2s;
+        -webkit-animation:descer 0.5s;
+    }
+    .imagem-cancel{
+        width: 20px;
+        height: 20px;
     }
     .revelar{
         display: none;
+    }
+    .margin-bottom-definida{
+        margin-bottom: 25px;
+    }
+    .mx-definido{
+        margin-right:25px;
+        margin-left: 25px;
+    }
+    .linha-bottom{
+        height: 25px;
+        width: 2px;
+        margin-top: -25px;
+        position: relative;
+        left: 50%;
+        background:#292929;
+    }
+    .linha-right{
+        height: 2px;
+        width: 25px;
+        margin-left: -25px;
+        position: relative;
+        transform: translateY(1000%);
+        background:#292929;
+    }
+    .linha-left{
+        height: 2px;
+        float: right;
+        width: 25px;
+        position: relative;
+        transform: translateY(1000%);
+        margin-right: -25px;
+        background:#292929;
     }
     @keyframes descer{
         from{
@@ -155,18 +194,26 @@
         }
         to{
             opacity: 1;
-            transform: translateY(15%);
-            -webkit-transform: translateY(15%);
-            -moz-transform: translateY(15%);
-            -ms-transform: translateY(15%);
-            -o-transform: translateY(15%);
-        }
+            transform: translateY(0%);
+            -webkit-transform: translateY(0%);
+            -moz-transform: translateY(0%);
+            -ms-transform: translateY(0%);
+            -o-transform: translateY(0%);
+}
     }
 /* TABLE */
-
+.overflow-visible{
+    overflow-x: visible;
+}
+.img-view{
+    height: 260px;
+    width: 100%;
+    object-fit: cover;
+}
 /* COR */
     .cinza{
         color: rgb(78, 78, 78);
+        word-break: break-all;
     }
     .cinza-claro{
         color: #aaa;
@@ -189,7 +236,24 @@
         border: 1px solid rgb(124, 123, 123);
         color: rgb(0, 162, 255);
     }
+    .more-small{
+        font-size:10px;
+    }
 /* button */
+
+/* borda */
+.borda-ideia{
+    border: solid 1px #979797;
+    width: 100px;
+    border-radius: 5px;
+    padding-right: 5px;
+    padding-left: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+}
+/* borda */
 
 /* BACKGROUND */
     .bg-cinza{

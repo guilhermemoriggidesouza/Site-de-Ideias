@@ -30,6 +30,38 @@
             </div>
         </div>
     </div>
+</div>
+<div class="modal" id="modalDescricao" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row cadastrar-classe">
+                    <div class="col-12">
+                        <p id="descricao-texto"><i>De uma descricao ao seu pensamento</i></p>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <form>
+                            <input id="descricao-pensamento" type="text" class="form-control" placeholder="Descricao">
+                        </form>
+                    </div>  
+                    <div class="col-12 col-md-4 align-self-end">
+                        <button type="button" id="enviar-pensamento" class=" btn btn-voltar">Salvar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
     function enviarForm(tipo, append, formData, callback){
         var get = '';
@@ -46,20 +78,20 @@
         })
         .done(function (data){
             callback(data);
-            console.log(data);
         }).fail(function(data){
-            console.log(data);
+            alert(data.responseJSON.sqlMessage);
         })
     }
-    function posicionaRodape() {
-        //valida se o body eh menor que a tela
-        var hw = $(window).innerHeight(), 
-            hb = $('html').innerHeight();
-        if(hw > hb) {
-            $('#footer').addClass('fixed-bottom');
-        } else {
-            $('#footer').removeClass('fixed-bottom');
-        }
+    function excluirDados(tabela, where, callback){
+         $.ajax({ 
+            type: "DELETE",
+            url: "/api/delete?tabela="+tabela,
+            data: {where:where},
+        }).fail(function(data){
+            alert(data.responseJSON.sqlMessage);
+        }).done(function(data){
+            callback(data)
+        })
     }
     function abrirModal(modal){
         $(modal).modal('show');
@@ -116,7 +148,7 @@
         })
         .done(function (data) {
             if(data.error){
-                alert(data.msg);
+                alert(data.responseJSON.sqlMessage);
             }else{
                 alert('Usuario Logado Com Sucesso');
                 window.location.href="/";
@@ -133,14 +165,11 @@
             callback(data);
         })
         .fail(function(data){
-            var mensageError = JSON.parse(data.responseText) ;
-            alert(mensageError.result.sqlMessage);
+            alert(data.responseJSON.sqlMessage);
         })
     }
     jQuery(function($) {
-        
         $(document).ready(function() {
-            
         });
     })
 </script>

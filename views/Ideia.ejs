@@ -11,24 +11,23 @@
             <div class="form-row">
                 <div class="col-12">
                     <form name="dadosIdeias">
-                        <div class="form-row">
-                            <div class="col-6">
+                        <div class="form-row mb-5">
+                            <div class="col-6 my-4">
                                 <label for="titulo">Titulo</label>
                                 <input type="text" class="form-control" id="titulo" name="titulo" placeholder="titulo Completo" required>
                             </div>   
-                            <div class="col-6">
+                            <div class="col-6 my-4">
                                 <label for="arquivo">Enviar Imagem</label>
                                 <input type="file" class="form-control-file" id="arquivo" name="arquivo">
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 my-4">
                                 <label for="descricao">Descrição</label>
                                 <textarea class="form-control" id="descricao" rows="3" name="descricao"></textarea>
                             </div>
                         </div>
                     </form>
-                    <button id="enviarIdeia" class="btn btn-primary">Enviar</button>
-                </div>
-                <h3>teste</h3>
+                    <button id="enviarIdeia" class="btn btn-voltar my-4 mb-5">Enviar</button>
+                </div >
             </div>
         </div>
 
@@ -48,10 +47,12 @@
                             if(data.affectedRows == 1){
                                 alert('Ideia Cadastrada');
                                 $('input').val('');
+                                $('textarea').val('');
                                 $('#enviarCadastro').attr('disabled', false);
                             }else{
                                 alert('Não Foi Possível Cadastrar a Ideia');
                                 $('input').val('');
+                                $('textarea').val('');
                                 $('#enviarCadastro').attr('disabled', false);
                             }
                         })
@@ -60,5 +61,4 @@
             })
         </script>
     </body>
-        <%include ./partials/rodape %>
 </html>

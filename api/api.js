@@ -26,7 +26,7 @@ function resolverPromisse(sql, res){
         res.status(200).send(result.result);
     })
     .catch(function(error){
-        res.status(200).send(error.result);
+        res.status(404).send(error.result);
     })
 }
 function gerarSqlInsert(tabela, arrDados){
@@ -134,18 +134,18 @@ module.exports = function(app){
         }
     });
     app.put('/api/put', function(req, res){
+        var sql;
         if(req.query.tipo == 'coluna'){
-            var sql = `UPDATE ${req.query.tabela} SET coluna = coluna + 1 `+req.query.where;
-            resolverPromisse(sql, res)
+            sql = `UPDATE ${req.query.tabela} SET coluna = coluna ${req.body.coluna} ${req.query.where}`
+            console.log(sql)
         }else{
-            var sql = gerarSqlUpdate(req.query.tabela, req.body, req.query.where)
-            resolverPromisse(sql, res)
+            sql = gerarSqlUpdate(req.query.tabela, req.body, req.query.where)
         }
+        resolverPromisse(sql, res)
     })
     app.delete('/api/delete', function(req, res){
-        for(i=0; i<1000; i++){
-            var sql =gerarSqlInsert('penis', {nome: 'luan', tamanho:i, circ: i})
-            QueryExecuta(sql);
-        }
+        var sql = `DELETE FROM ${req.query.tabela} ${req.body.where}`;
+        console.log(sql);
+        resolverPromisse(sql, res)
     })
 }

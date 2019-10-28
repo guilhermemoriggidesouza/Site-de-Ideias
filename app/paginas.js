@@ -37,10 +37,14 @@ module.exports = function(app){
         if(req.query.op && dados.user){
             res.render('./Ideia.ejs', dados);
         }
-        if(req.query.id && dados.user){
+        if(req.query.id){
             dados.idideia = req.query.id;
             res.render('./IdeiaEditar.ejs', dados);
         }
+    });
+    app.get('/otherIdea',function(req, res){
+        let dados = definirUser(req);
+        res.render('./otherIdea.ejs', dados)
     });
     
 }

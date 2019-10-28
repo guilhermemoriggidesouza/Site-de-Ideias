@@ -47,28 +47,44 @@
 
         <% include ./partials/footer %>
         <script>
+        function excluirIdeia(idideia){
+            excluirDados('pensamentos', " WHERE fk_ideia = "+idideia, function(){
+                excluirDados('ideias', " WHERE idideia = "+idideia, function(){
+                    $('#myTable').DataTable().clear().draw()
+                    gerarTabela()
+                })
+            })
+        }
+        function gerarTabela(){
+            dados = {sql:'SELECT * FROM ideias WHERE fk_usuario = <%=dados.id%>'};
+            pegarDados(dados, function(data){
+                var linhas
+                for(i=0; i<data.length; i++){
+                        linhas += ` <tr>
+                                    <td>${data[i].titulo}</td>
+                                    <td>${data[i].descricao}</td>
+                                    <td>${data[i].data_cadastro}</td>
+                                    <td class="text-center">
+                                        <a href="/Ideia?id=${data[i].idideia}">
+                                            <img src="img/editar.png" class="img-fluid d-inline-block img-table">
+                                        </a>
+                                        <a href="javascript:excluirIdeia(${data[i].idideia})">
+                                            <img src="img/cancel.png" class="d-inline-block img-table-menor">
+                                        </a>
+                                    </td>
+                                </tr>`;
+                }
+                $('#minhasIdeias').html(linhas)
+                posicionaRodape()
+            })
+        }
          jQuery(function($) {
             $(document).ready(function() {
-                dados = {sql:'SELECT * FROM ideias WHERE fk_usuario = <%=dados.id%>'};
-                pegarDados(dados, function(data){
-                    var linhas
-                    for(i=0; i<data.length; i++){
-                         linhas += ` <tr>
-                                        <td>${data[i].titulo}</td>
-                                        <td>${data[i].descricao}</td>
-                                        <td>${data[i].data_cadastro}</td>
-                                        <td class="text-center">
-                                            <a href="/Ideia?id=${data[i].idideia}">
-                                                <img src="img/editar.png" class="img-fluid d-inline-block img-table">
-                                            </a>
-                                        </td>
-                                    </tr>`;
-                    }
-                    $('#minhasIdeias').html(linhas)
-                    $('#myTable').DataTable({
-                        aoColumns: [null, null, null, { bSortable: false }]
-                    });
-                })
+                gerarTabela()
+                $('#myTable').DataTable({
+                    aoColumns: [null, null, null, { bSortable: false }]
+                });
+                posicionaRodape()
             });
         })
         </script>

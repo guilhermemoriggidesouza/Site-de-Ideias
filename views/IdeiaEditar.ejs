@@ -17,13 +17,13 @@
                 </div>
             </div>
         </div>
-        <div class="d-flex justify-content-center" id="colunasTotal">
+        <div class="d-flex justify-content-center mb-5 overflow-visible" id="colunasTotal">
                 
         </div>
 
         <% include ./partials/footer %>    
         <script>
-            function modificarDirecao(and, form, formData, adicional={}){
+            function modificarDirecao(and, form, adicional, callback){
                 var modificar = new FormData()
                     modificar.append(form.chave, form.valor);
                 enviarForm('put',
@@ -32,11 +32,7 @@
                     {chave: 'where', valor: ' WHERE fk_ideia = <%=dados.idideia%> AND'+and},
                     adicional
                 ], modificar, function(data){
-                    if(adicional.valor == 'coluna' ){
-                        enviarForm('post', [{chave:'tabela', valor: 'pensamentos'}], formData, function(dataInsert){
-                            carregarDadosPensamento();                            
-                        })
-                    } 
+                    callback(data)
                 })
             }
             function adicionarPensamento(numeroPensamento, clicado, direcao = ''){
@@ -45,74 +41,191 @@
                 formData.append('fk_last_pensamento', $(clicado).attr('data-lastPensamento'))
                 formData.append('coluna', $(clicado).attr('data-coluna'))
                 formData.append('nome', $('#nome-'+numeroPensamento).val())
-                formData.append('descricao', $('#descricao-'+numeroPensamento).val())
                 if(direcao.length > 1){
                     formData.append('vemde', direcao);
-                    modificarDirecao(' idpensamento = '+$(clicado).attr('data-lastPensamento'), {chave: direcao, valor: 1});
-                    modificarDirecao(' coluna >= '+$(clicado).attr('data-coluna'), {chave: 'coluna', valor: ''}, formData, {chave: 'tipo', valor: 'coluna'});
+                    modificarDirecao(' idpensamento = '+$(clicado).attr('data-lastPensamento'), {chave: direcao, valor: 1}, {}, function(){
+                        modificarDirecao(' coluna >= '+$(clicado).attr('data-coluna'), {chave: 'coluna', valor: '+1'}, {chave: 'tipo', valor: 'coluna'}, function(){
+                            enviarForm('post', [{chave:'tabela', valor: 'pensamentos'}], formData, function(data){
+                                carregarDadosPensamento('editar');
+                            })
+                        });
+                    });
                 }else{
                     enviarForm('post', [{chave:'tabela', valor: 'pensamentos'}], formData, function(data){
-                        carregarDadosPensamento();
+                        carregarDadosPensamento('editar');
                     })
                 }
             }
+            function deletarPensamento(idpensamento, lastPensamento, direcao, coluna){
+                pegarDados({sql: "SELECT idpensamento FROM pensamentos WHERE fk_last_pensamento = "+idpensamento+" AND fk_ideia = <%=dados.idideia%>"}, function(data){
+                    if(data.length > 0){
+                        alert("Algum pensamento depende dele, exclua os dependentes e tente novamente");
+                    }else{
+                        if(direcao != "fre"){
+                            modificarDirecao(' idpensamento = '+lastPensamento, {chave: direcao, valor: 0}, {}, function(){     
+                                pegarDados({sql: 'SELECT * FROM pensamentos WHERE coluna = '+coluna+' AND fk_ideia = <%=dados.idideia%>'}, function(dados){
+                                    if(dados.length <= 1){
+                                        modificarDirecao(' coluna > '+coluna, {chave: 'coluna', valor: '-1'}, {chave: 'tipo', valor: 'coluna'}, function(){
+                                            excluirDados('pensamentos', " WHERE idpensamento = "+idpensamento+" AND fk_ideia = <%=dados.idideia%>", function(){
+                                                carregarDadosPensamento('editar')
+                                            })
+                                        });
+                                    }
+                                })
+                            })
+                        }else{
+                            excluirDados('pensamentos', " WHERE idpensamento = "+idpensamento+" AND fk_ideia = <%=dados.idideia%>", function(){
+                                carregarDadosPensamento('editar')
+                            })
+                        }
+                    }
+                })
+            }
             function gerarPensamentoUnico(){
-                $('#coluna-1').html(` 
+                $('#coluna-1').html(`
                     <h5 class="cinza">Adicionar Pensamento</h5>
-                    <form>
-                        <input type="text" id="nome-0" name="nome" placeholder="Titulo">
-                        <input type="text" id="descricao-0" name="descricao" placeholder="Descrição">
-                    </form>
-                    <button class="button-salvar-0" onclick="adicionarPensamento(0, this)" data-lastPensamento="" data-coluna="1">Salvar</button>`)
+                    <div class="d-flex">
+                        <form class="align-self-center">
+                            <input type="text" id="nome-0" name="nome" class="form-control-sm" placeholder="Titulo">
+                            <input type="text" id="descricao-0" name="descricao" class="form-control-sm" placeholder="Descrição">
+                        </form>
+                        <button class="button-salvar-0 btn btn-voltar mx-3" onclick="adicionarPensamento(0, this)" data-lastPensamento="" data-coluna="1">Salvar</button>
+                    </div>
+                `)
             }
             function buttonsSalvarColunas(elemento){
                 var  buttonFrente = '', buttonDir = '', buttonEsq = '', colunaFrente, colunaDir, colunaEsq, funcaoEvento
                 colunaFrente = parseInt(elemento.coluna);
                 colunaDir = parseInt(elemento.coluna)+1;
                 colunaEsq = parseInt(elemento.coluna);
-                if(elemento.esq != 1){
+                if(elemento.esq != 1 && elemento.vemde != "dir"){
                     buttonEsq = `<button class="btn btn-primary rounded-circle button-salvar-${elemento.idpensamento}" onclick="adicionarPensamento(${elemento.idpensamento}, this, 'esq')" data-lastPensamento="${elemento.idpensamento}" data-coluna="${colunaEsq}"> < </button>`
                 }
-                if(elemento.dir != 1){
+                if(elemento.dir != 1 && elemento.vemde != "esq"){
                     buttonDir = `<button class="btn btn-secondary rounded-circle button-salvar-${elemento.idpensamento}" onclick="adicionarPensamento(${elemento.idpensamento}, this, 'dir')" data-lastPensamento="${elemento.idpensamento}" data-coluna="${colunaDir}"> > </button>`
                 }
                 buttonFrente = `<button class="btn btn-success rounded-circle button-salvar-${elemento.idpensamento}" onclick="adicionarPensamento(${elemento.idpensamento}, this)" data-lastPensamento="${elemento.idpensamento}" data-coluna="${colunaFrente}">V</button>`
                 return {buttonFrente: buttonFrente, buttonDir: buttonDir, buttonEsq: buttonEsq}
             }
-            function gerarPensamentos(data){
-                var dadoColuna ='', botoes
-                data.forEach(function(elemento){
-                    botoes = buttonsSalvarColunas(elemento);
-                    dadoColuna =`
-                        <div class="mx-4 contagem" id="margin-pensamento-${elemento.idpensamento}"> 
-                            <p class="cinza">${elemento.nome}</p>
-                            <p><small>${elemento.descricao}</small></p>
-                            <div class="revelar">
-                                <form name="pensamento-${elemento.idpensamento}">
-                                    <input type="text" id="nome-${elemento.idpensamento}" placeholder="Titulo">
-                                    <input type="text" id="descricao-${elemento.idpensamento}" placeholder="Descrição">
-                                </form>
-                                <div class="d-flex justify-content-center">
-                                    ${botoes.buttonEsq}
-                                    ${botoes.buttonFrente}
-                                    ${botoes.buttonDir}
-                                </div>
-                            </div>
-                        </div>`
-                    document.getElementById('coluna-'+elemento.coluna).innerHTML += dadoColuna
-                    if(elemento.fk_last_pensamento && elemento.vemde != 'fre'){
-                        $(`#margin-pensamento-${elemento.idpensamento}`).css({marginTop: $(`#margin-pensamento-${elemento.fk_last_pensamento}`).offset().top-$('#colunasTotal').offset().top+100})
+            function gerarClasseLinha(direcao, herdaDe){
+                var classe = "";
+                if(direcao == "fre"){
+                    classe = "linha-bottom";
+                }
+                if(direcao == "esq"){
+                    classe = "linha-left";
+                }
+                if(direcao == "dir"){
+                    classe = "linha-right";
+                }
+                return classe;
+            }
+            function AcoesAoVerDescricao(descricao, idpensamento){
+                $('#descricao-texto').html(descricao)
+                $('#modalDescricao').modal('show')
+                $('#enviar-pensamento').on('click', function(){
+                    var formData = new FormData()
+                    formData.append('descricao', $('#descricao-pensamento').val())
+                    enviarForm('put', 
+                    [
+                        {chave:'tabela', valor: 'pensamentos'},
+                        {chave:'where', valor: ' WHERE idpensamento ='+idpensamento}
+                    ], formData, function(data){
+                        $('#descricao-pensamento').val('')
+                        VerDescricao(idpensamento)
+                    })
+                })
+            }
+            function VerDescricao(idpensamento){
+                pegarDados({sql:"SELECT descricao FROM pensamentos WHERE idpensamento = "+idpensamento}, function(data){
+                    if(data.length > 0){
+                        console.log(data[0].descricao);
+                        AcoesAoVerDescricao(data[0].descricao, idpensamento)
+                    }else{
+                        AcoesAoVerDescricao('<i>De uma descricao ao seu pensamento</i>', idpensamento)
                     }
                 })
-                posicionaRodape()
-            }
 
-            function validaTamanhoData(data){
+            }
+            function gerarPensamentos(data, acao){
+                var dadoColuna ='', botoes = '', classe, cancel = '', revelar = '', descricao = ''
+                data.forEach(function(elemento){
+                    if(acao == 'editar'){
+                        botoes = buttonsSalvarColunas(elemento);
+                        cancel = `<img class="imagem-cancel" src="img/cancel.png" onclick="deletarPensamento(${elemento.idpensamento}, ${elemento.fk_last_pensamento}, '${elemento.vemde}', ${elemento.coluna})"/>`
+                        revelar = `
+                                    <div class="revelar">
+                                        <form name="pensamento-${elemento.idpensamento}">
+                                            <input type="text" id="nome-${elemento.idpensamento}" class="form-control-sm w-100" placeholder="Titulo">
+                                        </form>
+                                        <div class="d-flex justify-content-center">
+                                            ${botoes.buttonEsq}
+                                            ${botoes.buttonFrente}
+                                            ${botoes.buttonDir}
+                                        </div>
+                                    </div>`
+                        descricao = `<button type="button" class="btn btn-voltar more-small my-2" onclick="VerDescricao(${elemento.idpensamento})">Ver Descricao</button>`
+                    }
+                    if(acao == 'visualizar'){
+                        // alert('entro')
+                        if(elemento.descricao == null){
+                            descricao = ''
+                        }else{
+                            descricao = '<p class="cinza">'+elemento.descricao+'</p>'
+                        }
+                    }
+                    classe = gerarClasseLinha(elemento.vemde, elemento.fk_last_pensamento);
+                    dadoColuna =`
+                        <div class="contagem mx-definido borda-ideia margin-bottom-definida" id="margin-pensamento-${elemento.idpensamento}" data-coluna= ${elemento.coluna}> 
+                            <div class="${classe}"></div>
+                            <p class="cinza"><small>${elemento.nome}</small></p>
+                            ${cancel}
+                            ${descricao}
+                            ${revelar}
+                        </div>`
+                    if(elemento.coluna){
+                        document.getElementById('coluna-'+elemento.coluna).innerHTML += dadoColuna
+                    }else{
+                        gerarPensamentos(data)
+                    }
+                    AjustarVisualizacao(elemento)
+                })
+            }
+            function AjustarVisualizacao(elemento){
+                var multiplicadorColuna;
+                if(elemento.fk_last_pensamento != 0 && elemento.vemde != 'fre'){
+                    $(`#margin-pensamento-${elemento.idpensamento}`)
+                        .css({
+                            marginTop: $(`#margin-pensamento-${elemento.fk_last_pensamento}`).offset().top-$('#colunasTotal').offset().top
+                        })
+
+                    if(elemento.vemde == "dir"){
+                        multiplicadorColuna = (elemento.coluna - $(`#margin-pensamento-${elemento.fk_last_pensamento}`).attr("data-coluna")-1);
+                        distancia = multiplicadorColuna * 150 + 50
+                        console.log(multiplicadorColuna);
+                        $(`#margin-pensamento-${elemento.idpensamento} .linha-right`)
+                            .css({
+                                marginLeft: -parseInt(distancia)-5,
+                                width: parseInt(distancia)
+                            })
+                    }else{
+                        multiplicadorColuna = ($(`#margin-pensamento-${elemento.fk_last_pensamento}`).attr("data-coluna") - elemento.coluna-1);
+                        distancia = multiplicadorColuna * 150 + 50
+                        $(`#margin-pensamento-${elemento.idpensamento} .linha-left`)
+                            .css({
+                                marginRight: -parseInt(distancia)-5,
+                                width: parseInt(distancia)
+                            })
+                    }
+                }
+            }
+            function validaTamanhoData(data, acao){
                 if(data.length > 0){
-                    gerarPensamentos(data)
-                }else{
-                    alert('gerou')
+                    gerarPensamentos(data, acao)
+                }else if(acao == 'editar'){
                     gerarPensamentoUnico()
+                }else{
+                    $('#coluna-1').html('Nenhuma ideia inserida pelo criador')
                 }
             }
             function gerarColunas(maiorColuna){
@@ -124,33 +237,45 @@
                 }
                 if(maiorColuna == null){
                     colunas = '<div id="coluna-1" class="text-center"></div>'
-                }
+                }                
                 $('#colunasTotal').html(colunas)
             }
-            function carregarDadosPensamento(){
+            function carregarDadosPensamento(acao){
                 var dadosPensamentos = {sql:'SELECT * FROM pensamentos WHERE fk_ideia = <%=dados.idideia%> ORDER BY idpensamento'}
                 var dadosMaiorColuna = {sql:'SELECT MAX(coluna) AS maiorColuna FROM pensamentos WHERE fk_ideia = <%=dados.idideia%>'}
                 pegarDados(dadosPensamentos, function(data){
                     pegarDados(dadosMaiorColuna, function(maiorColuna){
                         gerarColunas(maiorColuna[0].maiorColuna);
                         data.maiorColuna = maiorColuna[0].maiorColuna
-                        validaTamanhoData(data);
+                        console.log(maiorColuna[0].maiorColuna)
+                        if(maiorColuna[0].maiorColuna > 9){
+                            $('#colunasTotal').css({float: "left"})
+                        }else{
+                            $('#colunasTotal').css({float: "inherit"})
+                        }
+                        validaTamanhoData(data, acao);
                     })
                 })
             }
             jQuery(function($) {
                 $(document).ready(function() {
-                    var dados = {sql:'SELECT ideias.titulo, ideias.data_cadastro, ideias.descricao, ideias.nomeImage, usuarios.nome FROM ideias LEFT JOIN usuarios on ideias.fk_usuario = usuarios.idusuario WHERE idideia = <%=dados.idideia%>'};
+                    console.log('<%=dados.idideia%>')
+                    var dados = {sql:'SELECT ideias.titulo, ideias.data_cadastro, ideias.descricao, ideias.nomeImage, usuarios.nome, usuarios.idusuario FROM ideias LEFT JOIN usuarios on ideias.fk_usuario = usuarios.idusuario WHERE idideia = <%=dados.idideia%>'};
+                    var user = '<%=dados.id%>'
                     pegarDados(dados, function(data){
                         $('#titulo').html(data[0].titulo)
                         $('#descricao').html(data[0].descricao)
                         $('#imagem').attr("src", "data/"+data[0].nomeImage)
                         $('#infos').html('<i>'+data[0].nome+' / '+data[0].data_cadastro+'</i>')
+                        
+                        if(user == data[0].idusuario){
+                            carregarDadosPensamento('editar')
+                        }else{
+                            carregarDadosPensamento('visualizar')
+                        }
                     })
-                    carregarDadosPensamento()
                 });
             })
         </script>
     </body>
-        <%include ./partials/rodape %>
 </html>

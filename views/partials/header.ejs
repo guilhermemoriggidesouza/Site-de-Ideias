@@ -1,12 +1,16 @@
 <div class="container my-2">
     <div class="d-flex justify-content-between">
         <div class="d-item">
-            <img src="img/logo.png" class="img-fluid">
+            <a href="/otherIdea">
+                <img src="img/logo.png" class="img-fluid">
+            </a>
         </div>
         <div class="d-item d-md-block d-none">
             <div class="d-block centralizarY">
                 <input type="text" class="Busca centralizarY-2 form-control-sm">
-                <i class=" mx-3 fas fa-search centralizarY-2 cinza-claro"></i>
+                <a href="/otherIdea">
+                    <i class=" mx-3 fas fa-search centralizarY-2 cinza-claro"></i>
+                </a>
                 <% if(dados.user){%>
                 <!-- ITEM CASO ESTEJA LOGADO -->
                 <p class="mb-0 d-inline-block">Bem Vindo <%=dados.user%></p>
